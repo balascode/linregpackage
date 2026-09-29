@@ -1,25 +1,4 @@
-
 # linregpackage
 
-<!-- badges: start -->
-<!-- badges: end -->
-
-The goal of linregpackage is to ...
-
-## Installation
-
-You can install the development version of linregpackage like so:
-
-``` r
-# FILL THIS IN! HOW CAN PEOPLE INSTALL YOUR DEV PACKAGE?
-```
-
-## Example
-
-This is a basic example which shows you how to solve a common problem:
-
-``` r
-library(linregpackage)
-## basic example code
-```
-
+R package implementing multiple linear regression using QR decomposition
+and S3 methods for Advanced R Programming (732A94).
