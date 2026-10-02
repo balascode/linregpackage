@@ -1,0 +1,182 @@
+---
+title: "Using linregpackage"
+author: "Venkata Balaji Anupoju and Marwan Karim"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+vignette: >
+  %\VignetteIndexEntry{Using linregpackage}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+<style>
+body {
+  max-width: 1050px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+h1, h2, h3 {
+  margin-top: 1.4em;
+}
+
+pre {
+  overflow-x: auto;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+</style>
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.align = "center",
+  out.width = "90%"
+)
+```
+
+# Introduction
+
+The `linregpackage` package implements multiple linear regression using
+QR decomposition.
+
+The main function is `linreg()`. It takes a model formula and a data
+frame, estimates the regression coefficients, and returns an S3 object
+of class `linreg`.
+
+The package also provides methods for inspecting the fitted model,
+including `print()`, `coef()`, `resid()`, `pred()`, `summary()`, and
+`plot()`.
+
+# Load the package
+
+```{r}
+library(linregpackage)
+```
+
+# Example data
+
+In this vignette, the built-in `iris` dataset is used.
+
+```{r}
+head(iris)
+```
+
+We will model `Petal.Length` using `Sepal.Length` and `Sepal.Width` as
+explanatory variables.
+
+# Fit a linear regression model
+
+A regression model can be fitted using `linreg()`.
+
+```{r}
+model <- linreg(
+  Petal.Length ~ Sepal.Length + Sepal.Width,
+  data = iris
+)
+```
+
+The resulting object has class `linreg`.
+
+```{r}
+class(model)
+```
+
+The function internally creates a design matrix from the supplied
+formula and estimates the regression coefficients using QR
+decomposition.
+
+# Print the fitted model
+
+The fitted model can be printed using `print()`.
+
+```{r}
+print(model)
+```
+
+The output shows the original model call and the estimated regression
+coefficients.
+
+# Extract regression coefficients
+
+The estimated coefficients can be extracted with `coef()`.
+
+```{r}
+coef(model)
+```
+
+The output contains the intercept and one coefficient for each
+explanatory variable in the model.
+
+# Extract residuals
+
+Residuals represent the difference between the observed response values
+and the fitted values from the model.
+
+They can be extracted using `resid()`.
+
+```{r}
+head(resid(model))
+```
+
+# Extract predicted values
+
+The fitted or predicted values can be returned using `pred()`.
+
+```{r}
+head(pred(model))
+```
+
+# Model summary
+
+The `summary()` method presents information about the fitted regression
+model.
+
+It includes coefficient estimates, standard errors, t-values, p-values,
+the residual standard deviation, and the residual degrees of freedom.
+
+```{r}
+summary(model)
+```
+
+# Diagnostic plots
+
+The `plot()` method creates two diagnostic plots.
+
+The first is a Residuals vs Fitted plot.
+
+The second is a Scale-Location plot.
+
+```{r, fig.width=7, fig.height=5}
+plot(model)
+```
+
+These plots can be used to inspect the residual behaviour of the fitted
+model.
+
+# Complete workflow
+
+A complete analysis with the package can be performed as follows:
+
+```{r}
+model <- linreg(
+  Petal.Length ~ Sepal.Length + Sepal.Width,
+  data = iris
+)
+
+print(model)
+coef(model)
+head(resid(model))
+head(pred(model))
+summary(model)
+```
+
+The `linreg` object stores the quantities calculated during model
+fitting, while the S3 methods provide convenient ways to inspect and
+display the model results.

@@ -12,13 +12,13 @@
 \item{...}{Additional arguments, currently not used.}
 }
 \value{
-A list containing two ggplot objects.
+Invisibly returns a list containing the two ggplot objects.
 }
 \description{
-Creates diagnostic plots for a fitted linreg model.
+Creates diagnostic plots for a fitted \code{linreg} model.
 }
 \details{
-The method produces two plots:
+The method produces two diagnostic plots:
 \itemize{
   \item Residuals vs Fitted
   \item Scale-Location

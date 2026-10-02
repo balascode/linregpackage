@@ -7,15 +7,8 @@
 #'
 #' @return A numeric vector containing the residuals.
 #'
+#' @importFrom stats resid
 #' @export
 resid.linreg <- function(object, ...) {
   return(object$residuals)
 }
-
-
-model <- linreg(
-  Petal.Length ~ Sepal.Length + Sepal.Width,
-  data = iris
-)
-
-resid(model)
