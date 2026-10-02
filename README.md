@@ -47,3 +47,22 @@ head(resid(model))
 head(pred(model))
 summary(model)
 plot(model)
+
+
+## Installation
+
+Install the package from GitHub using `devtools`:
+
+```r
+install.packages("devtools")
+devtools::install_github("balascode/linregpackage")
+```
+
+Then load it and run an example:
+
+```r
+library(linregpackage)
+
+model <- linreg(Petal.Length ~ Sepal.Width + Sepal.Length, data = iris)
+summary(model)
+```
