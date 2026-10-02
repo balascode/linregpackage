@@ -12,32 +12,35 @@ vignette: >
 
 <style>
 body {
-  max-width: 1050px;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 25px 35px;
   line-height: 1.6;
 }
 
-h1, h2, h3 {
-  margin-top: 1.4em;
+h1, h2 {
+  margin-top: 2em;
 }
 
 pre {
-  overflow-x: auto;
+  border-radius: 6px;
+  padding: 12px;
 }
 
 img {
-  max-width: 100%;
+  display: block;
+  margin: 25px auto 40px auto;
+  max-width: 72%;
   height: auto;
 }
 </style>
 
-```{r, include = FALSE}
+```{r, include=FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.align = "center",
-  out.width = "90%"
+  out.width = "72%"
 )
 ```
 
@@ -149,16 +152,51 @@ summary(model)
 
 The `plot()` method creates two diagnostic plots.
 
-The first is a Residuals vs Fitted plot.
+The first plot shows the residuals against the fitted values.
+The second is a Scale-Location plot based on standardized residuals.
 
-The second is a Scale-Location plot.
-
-```{r, fig.width=7, fig.height=5}
+```{r diagnostic-plots, fig.width=6, fig.height=4, fig.align="center", out.width="68%"}
 plot(model)
 ```
 
 These plots can be used to inspect the residual behaviour of the fitted
-model.
+linear regression model.
+
+# Linkoping University graphical theme
+
+The package also includes a ggplot2 theme based on the graphical profile
+of Linkoping University. The theme uses the LiU colour palette together
+with a clean layout.
+
+```{r liu-theme, fig.width=6, fig.height=4, fig.align="center", out.width="68%"}
+theme_data <- data.frame(
+  group = c("A", "B", "C"),
+  value = c(4, 7, 5)
+)
+
+ggplot2::ggplot(
+  theme_data,
+  ggplot2::aes(
+    x = group,
+    y = value,
+    fill = group
+  )
+) +
+  ggplot2::geom_col(
+    width = 0.6
+  ) +
+  scale_fill_liu() +
+  theme_liu() +
+  ggplot2::labs(
+    title = "Linkoping University",
+    subtitle = "Example using the LiU graphical theme",
+    x = NULL,
+    y = "Value"
+  ) +
+  ggplot2::theme(
+    legend.position = "none"
+  )
+```
 
 # Complete workflow
 
