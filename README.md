@@ -47,7 +47,7 @@ head(resid(model))
 head(pred(model))
 summary(model)
 plot(model)
-
+```
 
 ## Installation
 
