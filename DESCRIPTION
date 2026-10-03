@@ -16,11 +16,10 @@ Authors@R: c(
         role = "aut"
     )
     )
-Description: MImplements multiple linear regression using QR decomposition
+Description: Implements multiple linear regression using QR decomposition
     together with S3 methods for model inspection, diagnostics and summaries.
 License: MIT + file LICENSE
 Encoding: UTF-8
-LazyData: true
 Config/roxygen2/version: 8.1.0
 Suggests: 
     knitr,
