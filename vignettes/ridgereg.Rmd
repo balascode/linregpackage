@@ -484,6 +484,18 @@ These results show that the three approaches can produce different prediction pe
 
 The test result is more important than the training result when comparing the final models because it measures how well each model performs on observations that were not used during model fitting.
 
+# Airport delay visualization
+
+The package also includes the `visualize_airport_delays()` function. This function uses flight and airport data from the `nycflights13` package.
+
+The flight data is grouped by destination airport using `dplyr`. For each airport, the mean arrival delay is calculated and then joined with the airport longitude and latitude information.
+
+The result is displayed using `ggplot2`, where the colour of each point represents the mean arrival delay and the size of the point represents the number of flights.
+
+```{r airport-delay-visualization}
+visualize_airport_delays()
+```
+
 # Conclusion
 
 In this vignette, we used the `BostonHousing` dataset to compare ordinary linear regression, forward variable selection, and ridge regression.
