@@ -132,10 +132,11 @@ ridgereg <- function(formula, data, lambda) {
   # Estimate ridge coefficients
   # -----------------------------
 
-  beta_scaled <- solve(
-    crossprod(X_ridge) +
-      lambda * penalty,
-    crossprod(X_ridge, y)
+  beta_scaled <- ridge_qr(
+    X = X_ridge,
+    y = y,
+    lambda = lambda,
+    has_intercept = has_intercept
   )
 
   beta_scaled <- as.numeric(
