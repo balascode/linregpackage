@@ -25,10 +25,13 @@ Suggests:
     testthat (>= 3.0.0),
     knitr,
     rmarkdown,
-    MASS
+    MASS,
+    caret,
+    mlbench
 VignetteBuilder: knitr
-Imports: 
+Imports:
+    dplyr,
     ggplot2,
-    graphics,
-    stats
+    nycflights13,
+    rlang
 Config/testthat/edition: 3

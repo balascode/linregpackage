@@ -16,7 +16,9 @@ export(ridgereg)
 export(scale_colour_liu)
 export(scale_fill_liu)
 export(theme_liu)
+export(visualize_airport_delays)
 importFrom(graphics,plot)
+importFrom(rlang,.data)
 importFrom(stats,
   .getXlevels,
   coef,

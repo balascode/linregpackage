@@ -1,0 +1,499 @@
+---
+title: "Ridge Regression"
+author: "Venkata Balaji Anupoju and Marwan Karim"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Ridge Regression}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
+)
+
+set.seed(123)
+
+library(linregpackage)
+library(caret)
+library(mlbench)
+library(ggplot2)
+```
+
+# Introduction
+
+Ridge regression is an extension of ordinary linear regression. The main difference is that ridge regression adds a penalty for large coefficient values. This can make the model more stable when several predictors are strongly related to each other.
+
+The size of the penalty is controlled by a parameter called `lambda`. When `lambda` is zero, there is no ridge penalty. As `lambda` becomes larger, the estimated coefficients are shrunk more strongly towards zero.
+
+In this vignette, we use the `BostonHousing` dataset to compare three models:
+
+1. ordinary linear regression,
+2. linear regression with forward variable selection,
+3. ridge regression using our `ridgereg()` function.
+
+The data is first divided into training and test sets. The training set is used for fitting the models and choosing the ridge penalty. The test set is kept separate until the final comparison.
+
+For ridge regression, several values of `lambda` are evaluated using 10-fold cross-validation. The value with the lowest average validation RMSE is then used to fit the final ridge model.
+
+# Data
+
+The `BostonHousing` dataset is available in the `mlbench` package. The response variable is `medv`, which represents the median value of owner-occupied homes.
+
+```{r data}
+data("BostonHousing", package = "mlbench")
+
+dim(BostonHousing)
+head(BostonHousing)
+```
+
+The dataset contains `r nrow(BostonHousing)` observations and `r ncol(BostonHousing)` variables.
+
+We use `medv` as the response and all remaining variables as predictors.
+
+# Training and test data
+
+The data is divided into a training set and a test set. We use approximately 80% of the observations for training and 20% for testing.
+
+The split is created using `caret::createDataPartition()`. A fixed random seed is used so that the same split can be reproduced.
+
+```{r data-split}
+set.seed(123)
+
+train_index <- caret::createDataPartition(
+  BostonHousing$medv,
+  p = 0.80,
+  list = FALSE
+)
+
+train_data <- BostonHousing[train_index, ]
+test_data <- BostonHousing[-train_index, ]
+
+nrow(train_data)
+nrow(test_data)
+```
+
+The training data contains `r nrow(train_data)` observations and the test data contains `r nrow(test_data)` observations.
+
+The test data will not be used for choosing variables or selecting `lambda`. It is only used at the end to compare the final models.
+
+# Evaluation measure
+
+We use root mean squared error, RMSE, to compare prediction performance.
+
+RMSE measures the average size of the prediction errors. A smaller RMSE means that the predictions are closer to the observed values.
+
+```{r rmse-function}
+rmse <- function(actual, predicted) {
+  sqrt(mean((actual - predicted)^2))
+}
+```
+
+# Ordinary linear regression
+
+We first fit a standard linear regression model using all available predictors.
+
+```{r linear-model}
+linear_model <- stats::lm(
+  medv ~ .,
+  data = train_data
+)
+
+linear_model
+```
+
+Predictions are calculated for the training data.
+
+```{r linear-training}
+linear_train_prediction <- predict(
+  linear_model,
+  newdata = train_data
+)
+
+linear_train_rmse <- rmse(
+  train_data$medv,
+  linear_train_prediction
+)
+
+linear_train_rmse
+```
+
+The training RMSE for the ordinary linear regression model is `r round(linear_train_rmse, 3)`.
+
+This model provides a useful baseline because all predictors are included and no regularization or variable selection is performed.
+
+# Linear regression with forward selection
+
+The second model uses forward variable selection.
+
+Forward selection starts with an intercept-only model and adds predictors step by step. At every stage, the algorithm considers whether adding another predictor improves the model.
+
+We define both an intercept-only model and a full model containing all predictors.
+
+```{r forward-model}
+null_model <- stats::lm(
+  medv ~ 1,
+  data = train_data
+)
+
+full_model <- stats::lm(
+  medv ~ .,
+  data = train_data
+)
+
+forward_model <- stats::step(
+  null_model,
+  scope = list(
+    lower = formula(null_model),
+    upper = formula(full_model)
+  ),
+  direction = "forward",
+  trace = 0
+)
+
+forward_model
+```
+
+The variables selected by the forward-selection procedure are:
+
+```{r selected-variables}
+attr(
+  stats::terms(forward_model),
+  "term.labels"
+)
+```
+
+We now calculate the training RMSE.
+
+```{r forward-training}
+forward_train_prediction <- predict(
+  forward_model,
+  newdata = train_data
+)
+
+forward_train_rmse <- rmse(
+  train_data$medv,
+  forward_train_prediction
+)
+
+forward_train_rmse
+```
+
+The training RMSE for the forward-selection model is `r round(forward_train_rmse, 3)`.
+
+The purpose of forward selection is to find a simpler model that keeps useful predictors while leaving out predictors that do not provide enough additional information.
+
+# Ridge regression
+
+We now fit ridge regression using the `ridgereg()` function from our package.
+
+Unlike ordinary linear regression, ridge regression adds a penalty to large coefficient values. The strength of this penalty is controlled by `lambda`.
+
+Before fitting the model, the predictors are standardized inside `ridgereg()`. This is important because the ridge penalty should not depend on the original measurement scale of a predictor.
+
+Our implementation uses QR decomposition to solve the ridge-regression problem.
+
+# Choosing lambda
+
+There is no single value of `lambda` that is best for every dataset. We therefore evaluate several possible values.
+
+```{r lambda-grid}
+lambda_grid <- 10^seq(
+  from = -3,
+  to = 3,
+  length.out = 25
+)
+
+lambda_grid
+```
+
+The values range from very weak regularization to much stronger regularization.
+
+We use 10-fold cross-validation on the training set to compare them.
+
+# 10-fold cross-validation
+
+The training data is divided into 10 folds.
+
+For each value of `lambda`, the following procedure is performed:
+
+1. one fold is used as validation data,
+2. the remaining nine folds are used to fit `ridgereg()`,
+3. predictions are made for the validation fold,
+4. the RMSE is calculated,
+5. the process is repeated until every fold has been used for validation.
+
+The average RMSE across the ten folds is used as the cross-validation result for that value of `lambda`.
+
+```{r cross-validation}
+set.seed(123)
+
+folds <- caret::createFolds(
+  train_data$medv,
+  k = 10,
+  list = TRUE,
+  returnTrain = FALSE
+)
+
+cv_rmse <- numeric(length(lambda_grid))
+
+for (lambda_index in seq_along(lambda_grid)) {
+
+  lambda_value <- lambda_grid[lambda_index]
+
+  fold_rmse <- numeric(length(folds))
+
+  for (fold_index in seq_along(folds)) {
+
+    validation_rows <- folds[[fold_index]]
+
+    cv_training_data <- train_data[-validation_rows, ]
+    cv_validation_data <- train_data[validation_rows, ]
+
+    ridge_cv_model <- ridgereg(
+      medv ~ .,
+      data = cv_training_data,
+      lambda = lambda_value
+    )
+
+    ridge_cv_prediction <- predict(
+      ridge_cv_model,
+      newdata = cv_validation_data
+    )
+
+    fold_rmse[fold_index] <- rmse(
+      cv_validation_data$medv,
+      ridge_cv_prediction
+    )
+  }
+
+  cv_rmse[lambda_index] <- mean(fold_rmse)
+}
+```
+
+We collect the results in a data frame.
+
+```{r cv-results}
+cv_results <- data.frame(
+  lambda = lambda_grid,
+  RMSE = cv_rmse
+)
+
+cv_results
+```
+
+The best value of `lambda` is the one with the lowest average cross-validation RMSE.
+
+```{r best-lambda}
+best_lambda <- cv_results$lambda[
+  which.min(cv_results$RMSE)
+]
+
+best_cv_rmse <- min(cv_results$RMSE)
+
+best_lambda
+best_cv_rmse
+```
+
+The selected value is `lambda = `r signif(best_lambda, 4)``, with an average 10-fold cross-validation RMSE of `r round(best_cv_rmse, 3)`.
+
+It is important that this choice is made using only the training data. The test data has still not been used.
+
+# Cross-validation results
+
+The relationship between `lambda` and validation RMSE can be seen in the following plot.
+
+```{r cv-plot, fig.cap="Cross-validation RMSE for different values of lambda."}
+ggplot(
+  cv_results,
+  aes(
+    x = lambda,
+    y = RMSE
+  )
+) +
+  geom_line() +
+  geom_point() +
+  scale_x_log10() +
+  labs(
+    x = "Lambda",
+    y = "10-fold cross-validation RMSE",
+    title = "Selecting lambda using cross-validation"
+  ) +
+  theme_minimal()
+```
+
+Very small values of `lambda` behave similarly to ordinary linear regression, while larger values apply stronger regularization.
+
+The cross-validation results allow us to choose the amount of regularization based on prediction performance rather than choosing it manually.
+
+# Final ridge model
+
+We now fit the ridge model again using the complete training dataset and the selected value of `lambda`.
+
+```{r final-ridge}
+ridge_model <- ridgereg(
+  medv ~ .,
+  data = train_data,
+  lambda = best_lambda
+)
+
+ridge_model
+```
+
+The estimated ridge coefficients can be extracted using `coef()`.
+
+```{r ridge-coefficients}
+coef(ridge_model)
+```
+
+We also calculate the training RMSE for the final ridge model.
+
+```{r ridge-training}
+ridge_train_prediction <- predict(
+  ridge_model,
+  newdata = train_data
+)
+
+ridge_train_rmse <- rmse(
+  train_data$medv,
+  ridge_train_prediction
+)
+
+ridge_train_rmse
+```
+
+The training RMSE for the ridge model is `r round(ridge_train_rmse, 3)`.
+
+# Training performance
+
+The training results for the three models are shown below.
+
+```{r training-comparison}
+training_results <- data.frame(
+  Model = c(
+    "Linear regression",
+    "Forward selection",
+    "Ridge regression"
+  ),
+  RMSE = c(
+    linear_train_rmse,
+    forward_train_rmse,
+    ridge_train_rmse
+  )
+)
+
+training_results
+```
+
+Training performance is useful for understanding how closely each model fits the data it was trained on. However, the main comparison should be made using observations that were not used during model fitting.
+
+# Evaluation on the test data
+
+We now use the test dataset for the first time.
+
+Predictions are calculated for all three final models.
+
+```{r test-predictions}
+linear_test_prediction <- predict(
+  linear_model,
+  newdata = test_data
+)
+
+forward_test_prediction <- predict(
+  forward_model,
+  newdata = test_data
+)
+
+ridge_test_prediction <- predict(
+  ridge_model,
+  newdata = test_data
+)
+```
+
+We calculate the test RMSE for each model.
+
+```{r test-rmse}
+linear_test_rmse <- rmse(
+  test_data$medv,
+  linear_test_prediction
+)
+
+forward_test_rmse <- rmse(
+  test_data$medv,
+  forward_test_prediction
+)
+
+ridge_test_rmse <- rmse(
+  test_data$medv,
+  ridge_test_prediction
+)
+```
+
+The final comparison is:
+
+```{r final-comparison}
+test_results <- data.frame(
+  Model = c(
+    "Linear regression",
+    "Forward selection",
+    "Ridge regression"
+  ),
+  Test_RMSE = c(
+    linear_test_rmse,
+    forward_test_rmse,
+    ridge_test_rmse
+  )
+)
+
+test_results
+```
+
+The model with the lowest test RMSE is:
+
+```{r best-model}
+best_model <- test_results$Model[
+  which.min(test_results$Test_RMSE)
+]
+
+best_model
+```
+
+In this train/test split, **`r best_model`** has the lowest test RMSE.
+
+# Comparing the three approaches
+
+The ordinary linear regression model uses all available predictors and estimates the coefficients without applying any penalty.
+
+The forward-selection model starts from a simple model and adds predictors that improve the model according to the selection procedure. This can produce a smaller model than ordinary linear regression.
+
+Ridge regression takes a different approach. Instead of removing predictors, it keeps them and shrinks their coefficients. The amount of shrinkage is controlled by `lambda`.
+
+For this analysis, the selected ridge penalty was `r signif(best_lambda, 4)`.
+
+The final test RMSE values were:
+
+- ordinary linear regression: `r round(linear_test_rmse, 3)`,
+- forward-selection regression: `r round(forward_test_rmse, 3)`,
+- ridge regression: `r round(ridge_test_rmse, 3)`.
+
+These results show that the three approaches can produce different prediction performance even though they are all based on linear models.
+
+The test result is more important than the training result when comparing the final models because it measures how well each model performs on observations that were not used during model fitting.
+
+# Conclusion
+
+In this vignette, we used the `BostonHousing` dataset to compare ordinary linear regression, forward variable selection, and ridge regression.
+
+The data was divided into separate training and test sets. Model fitting and parameter selection were performed using only the training data.
+
+For ridge regression, several values of `lambda` were evaluated using 10-fold cross-validation. The value with the lowest average validation RMSE was selected and used to fit the final ridge model.
+
+The final models were then evaluated on the test data using RMSE.
+
+The main advantage of ridge regression is that it can control large coefficient estimates by applying regularization. Instead of removing predictors completely, ridge regression shrinks their coefficients. This can be useful when predictors contain overlapping information or are strongly correlated.
+
+The analysis also shows why the test set should remain separate during model development. If the test data were used to choose `lambda` or select predictors, the final test result would no longer represent an independent evaluation of the models.
