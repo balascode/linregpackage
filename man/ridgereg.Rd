@@ -11,7 +11,7 @@ ridgereg(formula, data, lambda)
 
 \item{data}{A data frame containing the variables in the model.}
 
-\item{lambda}{A non-negative numeric regularization parameter.}
+\item{lambda}{A single non-negative numeric regularization parameter.}
 }
 \value{
 An object of class \code{ridgereg}.
@@ -19,4 +19,9 @@ An object of class \code{ridgereg}.
 \description{
 Fits a ridge regression model using a formula, a data frame,
 and a non-negative regularization parameter lambda.
+}
+\details{
+The predictor variables are standardized using the training-data
+means and standard deviations before the ridge regression is fitted.
+The intercept is not penalized.
 }
