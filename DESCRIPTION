@@ -2,6 +2,8 @@ Package: linregpackage
 Type: Package
 Title: Linear Regression Models Using QR Decomposition
 Version: 0.1.0
+Depends:
+    R (>= 4.1.0)
 Authors@R: c(
     person(
         given = "Venkata Balaji",
@@ -16,8 +18,10 @@ Authors@R: c(
         role = "aut"
     )
     )
-Description: Implements multiple linear regression using QR decomposition
-    together with S3 methods for model inspection, diagnostics and summaries.
+Description: Implements multiple linear regression and ridge regression
+    using QR decomposition, together with S3 methods for model inspection,
+    prediction and diagnostics. The package also includes an airport delay
+    visualization using data from nycflights13.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Config/roxygen2/version: 8.1.0
