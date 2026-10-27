@@ -8,9 +8,21 @@ visualize_airport_delays()
 }
 \value{
 A ggplot object showing destination airports by longitude
-  and latitude.
+  and latitude. Point colour represents the mean arrival delay and
+  point size represents the number of flights.
 }
 \description{
 Creates a geographic scatter plot showing the mean arrival delay
-for destination airports in the nycflights13 flights dataset.
+for destination airports in the \code{nycflights13} flights dataset.
+}
+\details{
+The function groups flights by destination airport, calculates the
+mean arrival delay, joins the result with airport coordinates, and
+displays the airports using longitude and latitude.
+}
+\examples{
+\dontrun{
+visualize_airport_delays()
+}
+
 }

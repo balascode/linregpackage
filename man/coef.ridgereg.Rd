@@ -12,8 +12,20 @@
 \item{...}{Additional arguments, currently unused.}
 }
 \value{
-A named numeric vector containing the ridge regression coefficients.
+A named numeric vector containing the ridge regression
+  coefficients.
 }
 \description{
-Returns the estimated coefficients from a ridgereg object.
+Returns the estimated coefficients from a fitted
+\code{ridgereg} model.
+}
+\examples{
+fit <- ridgereg(
+  mpg ~ wt + hp,
+  data = mtcars,
+  lambda = 1
+)
+
+coef(fit)
+
 }

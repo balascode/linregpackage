@@ -9,7 +9,8 @@
 \arguments{
 \item{object}{An object of class \code{ridgereg}.}
 
-\item{newdata}{An optional data frame containing new observations.}
+\item{newdata}{An optional data frame containing new observations.
+The predictor variables should match those used when fitting the model.}
 
 \item{...}{Additional arguments, currently not used.}
 }
@@ -17,6 +18,20 @@
 A numeric vector containing predicted values.
 }
 \description{
-Calculates predicted values from a fitted ridgereg model.
-If newdata is not provided, returns the fitted values.
+Calculates predicted values from a fitted \code{ridgereg} model.
+If \code{newdata} is not provided, the fitted values from the
+original model are returned.
+}
+\examples{
+fit <- ridgereg(
+  mpg ~ wt + hp,
+  data = mtcars,
+  lambda = 1
+)
+
+predict(fit)
+
+new_cars <- mtcars[1:3, ]
+predict(fit, newdata = new_cars)
+
 }

@@ -12,9 +12,19 @@
 \item{...}{Additional arguments, currently not used.}
 }
 \value{
-The ridgereg object, returned invisibly.
+The \code{ridgereg} object, returned invisibly.
 }
 \description{
 Prints the model call and estimated regression coefficients
-from a fitted ridgereg model.
+from a fitted \code{ridgereg} model.
+}
+\examples{
+fit <- ridgereg(
+  mpg ~ wt + hp,
+  data = mtcars,
+  lambda = 1
+)
+
+print(fit)
+
 }

@@ -1,13 +1,21 @@
-
 #' Print a Ridge Regression Model
 #'
 #' Prints the model call and estimated regression coefficients
-#' from a fitted ridgereg model.
+#' from a fitted \code{ridgereg} model.
 #'
 #' @param x An object of class \code{ridgereg}.
 #' @param ... Additional arguments, currently not used.
 #'
-#' @return The ridgereg object, returned invisibly.
+#' @return The \code{ridgereg} object, returned invisibly.
+#'
+#' @examples
+#' fit <- ridgereg(
+#'   mpg ~ wt + hp,
+#'   data = mtcars,
+#'   lambda = 1
+#' )
+#'
+#' print(fit)
 #'
 #' @export
 print.ridgereg <- function(x, ...) {

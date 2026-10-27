@@ -3,19 +3,33 @@
 #' Fits a ridge regression model using a formula, a data frame,
 #' and a non-negative regularization parameter lambda.
 #'
-#' @param formula A model formula.
-#' @param data A data frame containing the variables in the model.
-#' @param lambda A single non-negative numeric regularization parameter.
+#' The predictor variables are standardized before fitting the model.
+#' Ridge regression coefficients are estimated using QR decomposition.
 #'
-#' @return An object of class \code{ridgereg}.
+#' @param formula A model formula describing the relationship between
+#'   the response variable and the predictor variables.
+#' @param data A data frame containing the variables used in the model.
+#' @param lambda A single non-negative numeric value controlling the
+#'   strength of the ridge penalty.
+#'
+#' @return An object of class \code{ridgereg} containing the estimated
+#'   coefficients, fitted values, residuals, model information, and the
+#'   value of lambda used when fitting the model.
+#'
+#' @examples
+#' fit <- ridgereg(
+#'   mpg ~ wt + hp,
+#'   data = mtcars,
+#'   lambda = 1
+#' )
+#'
+#' print(fit)
+#' coef(fit)
+#' predict(fit, newdata = mtcars[1:3, ])
 #'
 #' @importFrom stats model.frame model.response terms model.matrix sd .getXlevels
 #' @export
 ridgereg <- function(formula, data, lambda) {
-
-  # -----------------------------
-  # Validate the inputs
-  # -----------------------------
 
   if (!inherits(formula, "formula")) {
     stop("formula must be a formula.")
@@ -33,10 +47,6 @@ ridgereg <- function(formula, data, lambda) {
   ) {
     stop("lambda must be a single non-negative finite number.")
   }
-
-  # -----------------------------
-  # Create model data
-  # -----------------------------
 
   model_frame <- model.frame(
     formula = formula,
@@ -56,10 +66,6 @@ ridgereg <- function(formula, data, lambda) {
     data = model_frame
   )
 
-  # -----------------------------
-  # Separate the intercept
-  # -----------------------------
-
   has_intercept <- attr(
     terms_object,
     "intercept"
@@ -73,10 +79,6 @@ ridgereg <- function(formula, data, lambda) {
 
     predictor_matrix <- X
   }
-
-  # -----------------------------
-  # Normalize predictors
-  # -----------------------------
 
   predictor_means <- colMeans(
     predictor_matrix
@@ -100,10 +102,6 @@ ridgereg <- function(formula, data, lambda) {
     scale = predictor_scales
   )
 
-  # -----------------------------
-  # Add intercept after scaling
-  # -----------------------------
-
   if (has_intercept) {
 
     X_ridge <- cbind(
@@ -116,10 +114,6 @@ ridgereg <- function(formula, data, lambda) {
     X_ridge <- X_scaled
   }
 
-  # -----------------------------
-  # Ridge penalty matrix
-  # -----------------------------
-
   penalty <- diag(
     ncol(X_ridge)
   )
@@ -127,10 +121,6 @@ ridgereg <- function(formula, data, lambda) {
   if (has_intercept) {
     penalty[1, 1] <- 0
   }
-
-  # -----------------------------
-  # Estimate ridge coefficients
-  # -----------------------------
 
   beta_scaled <- ridge_qr(
     X = X_ridge,
@@ -146,11 +136,6 @@ ridgereg <- function(formula, data, lambda) {
   names(beta_scaled) <- colnames(
     X_ridge
   )
-
-  # -----------------------------
-  # Convert coefficients back to
-  # the original predictor scale
-  # -----------------------------
 
   predictor_coefficients <-
     beta_scaled[
@@ -183,20 +168,11 @@ ridgereg <- function(formula, data, lambda) {
     coefficients <- predictor_coefficients
   }
 
-  # -----------------------------
-  # Calculate fitted values
-  # -----------------------------
-
   fitted_values <- as.numeric(
     X_ridge %*% beta_scaled
   )
 
   residuals <- y - fitted_values
-
-  # -----------------------------
-  # Store everything required by
-  # later methods such as predict()
-  # -----------------------------
 
   result <- list(
     call = match.call(),

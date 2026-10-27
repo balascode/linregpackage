@@ -1,14 +1,27 @@
-
 #' Predict Values from a Ridge Regression Model
 #'
-#' Calculates predicted values from a fitted ridgereg model.
-#' If newdata is not provided, returns the fitted values.
+#' Calculates predicted values from a fitted \code{ridgereg} model.
+#' If \code{newdata} is not provided, the fitted values from the
+#' original model are returned.
 #'
 #' @param object An object of class \code{ridgereg}.
 #' @param newdata An optional data frame containing new observations.
+#'   The predictor variables should match those used when fitting the model.
 #' @param ... Additional arguments, currently not used.
 #'
 #' @return A numeric vector containing predicted values.
+#'
+#' @examples
+#' fit <- ridgereg(
+#'   mpg ~ wt + hp,
+#'   data = mtcars,
+#'   lambda = 1
+#' )
+#'
+#' predict(fit)
+#'
+#' new_cars <- mtcars[1:3, ]
+#' predict(fit, newdata = new_cars)
 #'
 #' @export
 predict.ridgereg <- function(object, newdata = NULL, ...) {

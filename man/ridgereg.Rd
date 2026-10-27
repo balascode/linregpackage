@@ -7,16 +7,36 @@
 ridgereg(formula, data, lambda)
 }
 \arguments{
-\item{formula}{A model formula.}
+\item{formula}{A model formula describing the relationship between
+the response variable and the predictor variables.}
 
-\item{data}{A data frame containing the variables in the model.}
+\item{data}{A data frame containing the variables used in the model.}
 
-\item{lambda}{A single non-negative numeric regularization parameter.}
+\item{lambda}{A single non-negative numeric value controlling the
+strength of the ridge penalty.}
 }
 \value{
-An object of class \code{ridgereg}.
+An object of class \code{ridgereg} containing the estimated
+  coefficients, fitted values, residuals, model information, and the
+  value of lambda used when fitting the model.
 }
 \description{
 Fits a ridge regression model using a formula, a data frame,
 and a non-negative regularization parameter lambda.
+}
+\details{
+The predictor variables are standardized before fitting the model.
+Ridge regression coefficients are estimated using QR decomposition.
+}
+\examples{
+fit <- ridgereg(
+  mpg ~ wt + hp,
+  data = mtcars,
+  lambda = 1
+)
+
+print(fit)
+coef(fit)
+predict(fit, newdata = mtcars[1:3, ])
+
 }
