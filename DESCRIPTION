@@ -21,10 +21,11 @@ Description: Implements multiple linear regression using QR decomposition
 License: MIT + file LICENSE
 Encoding: UTF-8
 Config/roxygen2/version: 8.1.0
-Suggests: 
+Suggests:
+    testthat (>= 3.0.0),
     knitr,
     rmarkdown,
-    testthat (>= 3.0.0)
+    MASS
 VignetteBuilder: knitr
 Imports: 
     ggplot2,

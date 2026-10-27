@@ -20,8 +20,3 @@ An object of class \code{ridgereg}.
 Fits a ridge regression model using a formula, a data frame,
 and a non-negative regularization parameter lambda.
 }
-\details{
-The predictor variables are standardized using the training-data
-means and standard deviations before the ridge regression is fitted.
-The intercept is not penalized.
-}

@@ -140,3 +140,32 @@ test_that("ridgereg agrees with lm when lambda is zero", {
   )
 
 })
+
+test_that("ridgereg coefficients are similar to MASS::lm.ridge", {
+
+  testthat::skip_if_not_installed("MASS")
+
+  data(mtcars)
+
+  our_model <- ridgereg(
+    mpg ~ wt + hp,
+    data = mtcars,
+    lambda = 1
+  )
+
+  mass_model <- MASS::lm.ridge(
+    mpg ~ wt + hp,
+    data = mtcars,
+    lambda = 1
+  )
+
+  expect_lt(
+    max(
+      abs(
+        unname(coef(our_model)) -
+          unname(coef(mass_model))
+      )
+    ),
+    0.02
+  )
+})

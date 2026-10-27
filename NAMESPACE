@@ -18,6 +18,12 @@ export(scale_fill_liu)
 export(theme_liu)
 importFrom(graphics,plot)
 importFrom(stats,
+  .getXlevels,
   coef,
-  resid
+  model.frame,
+  model.matrix,
+  model.response,
+  resid,
+  sd,
+  terms
 )
